@@ -1,28 +1,53 @@
 (ns ^:figwheel-always hello-akjs.core
-    (:require [goog.dom :as gdom]))
+    (:require-macros [cljs.core.async.macros :refer [go]])
+    (:require [goog.dom :as dom]
+              [goog.events :as events]
+              [cljs.core.async :refer [put! chan <!]])
+    (:import [goog.net Jsonp]
+             [goog Uri]))
 
 (enable-console-print!)
 
-(println "Edits to this text should show up in your developer console.")
+(def circle (dom/getElement "my-circle"))
+;; (.setAttribute circle "fill" "tomato")
+;; (.setAttribute circle "r" "30")
+(.setAttribute circle "display" "none")
 
-;; define your app data so that it doesn't get over-written on reload
+(def wiki-search-url
+  "http://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=")
 
-(defonce app-state (atom {:text "Hello world!"}))
+(defn listen [el type]
+  (let [out (chan)]
+    (events/listen el type
+                   (fn [e] (put! out e)))
+    out))
 
+(defn jsonp [uri]
+  (let [out (chan)
+        req (Jsonp. (Uri. uri))]
+    (.send req nil (fn [res] (put! out res)))
+    out))
 
-(defn on-js-reload []
-  ;; optionally touch your app-state to force rerendering depending on
-  ;; your application
-  ;; (swap! app-state update-in [:__figwheel_counter] inc)
-  )
+(defn query-url [q]
+  (str wiki-search-url q))
 
-(defn draw [context]
-  (.clearRect context 0 0 300 300)
-  (.beginPath context)
-  (set! (.-fillStyle context) "#ff00ff")
-  (.arc context 100 200 40 0 (* (.-PI js/Math) 2) true)
-  (.closePath context)
-  (.fill context))
+(defn user-query []
+  (.-value (dom/getElement "query")))
 
-(def context (.getContext (gdom/getElement "app") "2d"))
-(draw context)
+(defn render-query [results]
+  (str
+    "<ul>"
+    (apply str
+      (for [result results]
+        (str "<li>" result "</li>")))
+    "</ul>"))
+
+(defn init []
+  (let [clicks (listen (dom/getElement "search") "click")
+        results-view (dom/getElement "results")]
+    (go (while true
+          (<! clicks)
+          (let [[_ results] (<! (jsonp (query-url (user-query))))]
+            (set! (.-innerHTML results-view) (render-query results)))))))
+
+(init)

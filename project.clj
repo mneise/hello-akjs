@@ -17,8 +17,7 @@
 
   :cljsbuild {
     :builds [{:id "dev"
-              :source-paths ["src"]
-
+              :source-map true
               :figwheel { :on-jsload "hello-akjs.core/on-js-reload" }
 
               :compiler {:main hello-akjs.core
@@ -27,7 +26,7 @@
                          :output-dir "resources/public/js/compiled/out"
                          :source-map-timestamp true }}
              {:id "min"
-              :source-paths ["src"]
+              :source-map true
               :compiler {:output-to "resources/public/js/compiled/hello_akjs.js"
                          :main hello-akjs.core
                          :optimizations :advanced
