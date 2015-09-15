@@ -16,21 +16,22 @@
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"]
 
   :cljsbuild {
-    :builds [{:id "dev"
-              :source-map true
-              :figwheel { :on-jsload "hello-akjs.core/on-js-reload" }
+              :builds [{:id "dev"
+                        :source-paths ["src"]
+                        :source-map true
+                        :figwheel { :on-jsload "hello-akjs.core/on-js-reload" }
 
-              :compiler {:main hello-akjs.core
-                         :asset-path "js/compiled/out"
-                         :output-to "resources/public/js/compiled/hello_akjs.js"
-                         :output-dir "resources/public/js/compiled/out"
-                         :source-map-timestamp true }}
-             {:id "min"
-              :source-map true
-              :compiler {:output-to "resources/public/js/compiled/hello_akjs.js"
-                         :main hello-akjs.core
-                         :optimizations :advanced
-                         :pretty-print false}}]}
+                        :compiler {:main hello-akjs.core
+                                   :asset-path "js/compiled/out"
+                                   :output-to "resources/public/js/compiled/hello_akjs.js"
+                                   :output-dir "resources/public/js/compiled/out"
+                                   :source-map-timestamp true }}
+                       {:id "min"
+                        :source-paths ["src"]
+                        :compiler {:output-to "resources/public/js/compiled/hello_akjs.js"
+                                   :main hello-akjs.core
+                                   :optimizations :advanced
+                                   :pretty-print false}}]}
 
   :figwheel {
              ;; :http-server-root "public" ;; default and assumes "resources" 
